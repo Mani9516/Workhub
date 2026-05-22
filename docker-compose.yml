@@ -1,0 +1,30 @@
+services:
+  api:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - workhub_data:/app/data
+    environment:
+      SECRET_KEY: "change-me-for-production"
+      DATABASE_URL: "sqlite:///./data/workhub.db"
+      # Demo: wipe certification_entries on each API start. Set "false" when you keep real certification data.
+      CLEAR_CERTIFICATIONS_ON_START: "true"
+      # Dev Docker: OTP is printed in API logs (`docker compose logs -f api`). For real email, set SMTP_* and set this to "false".
+      LOGIN_OTP_LOG_TO_CONSOLE: "true"
+
+  web:
+    build:
+      context: ./frontend
+      args:
+        # Baked at image build for optional login quick-fill (email only). Password: README “Demo logins”.
+        VITE_DEMO_EMAIL_EMPLOYEE: employee@workhub.demo
+        VITE_DEMO_EMAIL_MANAGER: manager@workhub.demo
+        VITE_DEMO_EMAIL_HR: hr@workhub.demo
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+
+volumes:
+  workhub_data:
